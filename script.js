@@ -1,203 +1,221 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- 要素の取得 ---
-    const canvas = document.getElementById('gridCanvas');
-    const ctx = canvas.getContext('2d');
+    const gridCanvas = document.getElementById('gridCanvas');
+    const topRuler = document.getElementById('topRuler');
+    const leftRuler = document.getElementById('leftRuler');
+    const ctx = gridCanvas.getContext('2d');
+    const ctxTop = topRuler.getContext('2d');
+    const ctxLeft = leftRuler.getContext('2d');
+
     const sizeSlider = document.getElementById('gridSize');
     const sizeLabel = document.getElementById('gridSizeLabel');
     const sizeLabel2 = document.getElementById('gridSizeLabel2');
-    const saveButton = document.getElementById('saveButton');
-    const clearButton = document.getElementById('clearButton');
     const incrementBtn = document.getElementById('incrementBtn');
     const decrementBtn = document.getElementById('decrementBtn');
     
-    // クリア確認モーダル
+    const subGridSizeSlider = document.getElementById('subGridSize');
+    const subGridSizeLabel = document.getElementById('subGridSizeLabel');
+    const subIncrementBtn = document.getElementById('subIncrementBtn');
+    const subDecrementBtn = document.getElementById('subDecrementBtn');
+
+    const saveButton = document.getElementById('saveButton');
+    const clearButton = document.getElementById('clearButton');
+    
+    // モーダル関連
     const confirmClearModal = document.getElementById('confirmClearModal');
     const confirmClearBtn = document.getElementById('confirmClearBtn');
     const cancelClearBtn = document.getElementById('cancelClearBtn');
-
-    // サイズ変更確認モーダル
-    const confirmResizeModal = document.getElementById('confirmResizeModal');
-    const confirmResizeBtn = document.getElementById('confirmResizeBtn');
-    const cancelResizeBtn = document.getElementById('cancelResizeBtn');
-
-    // 保存失敗モーダルを取得
     const saveErrorModal = document.getElementById('saveErrorModal');
     const closeErrorBtn = document.getElementById('closeErrorBtn');
 
     // --- グローバル変数 ---
+    const canvasSize = 640;
+    const rulerSize = 30;
     let n = parseInt(sizeSlider.value, 10);
+    let m = parseInt(subGridSizeSlider.value, 10);
     let gridState;
     let isDrawing = false;
     let paintMode = 0; // 0: 消去(白), 1: 描画(黒)
-    let pendingNewSize = n; // サイズ変更を一時的に保持する変数
 
     // --- 関数定義 ---
     
-    /**
-     * グリッドが空か（全て白いか）をチェックします。
-     * @returns {boolean} グリッドが空ならtrue、そうでなければfalse。
-     */
-    function isGridEmpty() {
-        // gridStateの全ての要素が0ならtrueを返す
-        return gridState.every(row => row.every(cell => cell === 0));
-    }
-
-    /**
-     * グリッドのサイズを更新し、再描画します。
-     * @param {number} newSize - 新しいグリッドのサイズ。
-     */
+    /** グリッドサイズを更新し、描画内容を維持する */
     function updateGridSize(newSize) {
-        const size = Math.max(1, Math.min(64, newSize)); // 1〜64の範囲に収める
+        const oldSize = n;
+        const oldGridState = gridState; // 古い描画状態を保持
+
+        const size = Math.max(1, Math.min(64, newSize));
         n = size;
-        pendingNewSize = size; // pendingも更新
         sizeSlider.value = size;
         sizeLabel.textContent = size;
         sizeLabel2.textContent = size;
-        initializeGrid();
+        
+        // 新しいサイズのグリッドを作成し、0で初期化
+        const newGridState = Array.from({ length: n }, () => Array(n).fill(0));
+        
+        // 古い描画状態を新しいグリッドにコピー
+        const copyLimit = Math.min(oldSize, n);
+        for (let row = 0; row < copyLimit; row++) {
+            for (let col = 0; col < copyLimit; col++) {
+                newGridState[row][col] = oldGridState[row][col];
+            }
+        }
+        
+        gridState = newGridState;
+        drawGrid();
     }
     
-    /**
-     * グリッドの状態を初期化（全て白にリセット）し、再描画します。
-     */
+    /** グリッドを初期化（クリア） */
     function initializeGrid() {
         gridState = Array.from({ length: n }, () => Array(n).fill(0));
+        // キャンバスの物理的なサイズを設定
+        gridCanvas.width = canvasSize;
+        gridCanvas.height = canvasSize;
+        topRuler.width = canvasSize;
+        topRuler.height = rulerSize;
+        leftRuler.width = rulerSize;
+        leftRuler.height = canvasSize;
         drawGrid();
     }
 
-    /**
-     * 現在のgridStateに基づいてキャンバス全体を描画します。
-     */
+    /** キャンバス全体を描画 */
     function drawGrid() {
-        const cellSize = canvas.width / n;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // セルの色を塗る
+        drawCells();
+        drawRulersAndLines();
+    }
+    
+    /** セル（黒/白）を描画 */
+    function drawCells() {
+        const cellSize = gridCanvas.width / n;
+        ctx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
         for (let row = 0; row < n; row++) {
             for (let col = 0; col < n; col++) {
                 ctx.fillStyle = gridState[row][col] === 1 ? 'black' : 'white';
                 ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
             }
         }
+    }
+    
+    /** 目盛とグリッド線を描画 */
+    function drawRulersAndLines() {
+        const cellSize = gridCanvas.width / n;
+        
+        ctxTop.clearRect(0, 0, topRuler.width, topRuler.height);
+        ctxLeft.clearRect(0, 0, leftRuler.width, leftRuler.height);
+        drawCells();
 
-        // ガイドラインを描画
+        ctxTop.textAlign = "center";
+        ctxTop.textBaseline = "middle";
+        ctxTop.fillStyle = "#5a4b41";
+        ctxTop.font = "12px sans-serif";
+        ctxLeft.textAlign = "center";
+        ctxLeft.textBaseline = "middle";
+        ctxLeft.fillStyle = "#5a4b41";
+        ctxLeft.font = "12px sans-serif";
+
+        ctx.beginPath();
         ctx.strokeStyle = '#e0d9c4';
         ctx.lineWidth = 1;
         for (let i = 1; i < n; i++) {
-            ctx.beginPath();
-            ctx.moveTo(i * cellSize, 0);
-            ctx.lineTo(i * cellSize, canvas.height);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(0, i * cellSize);
-            ctx.lineTo(canvas.width, i * cellSize);
-            ctx.stroke();
+            if (i % m !== 0) {
+                const pos = i * cellSize;
+                ctx.moveTo(pos, 0);
+                ctx.lineTo(pos, gridCanvas.height);
+                ctx.moveTo(0, pos);
+                ctx.lineTo(gridCanvas.width, pos);
+            }
         }
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = '#b3a394';
+        ctx.lineWidth = 2;
+        for (let i = 1; i < n; i++) {
+            if (i % m === 0) {
+                const pos = i * cellSize;
+                ctx.moveTo(pos, 0);
+                ctx.lineTo(pos, gridCanvas.height);
+                ctx.moveTo(0, pos);
+                ctx.lineTo(gridCanvas.width, pos);
+                ctxTop.fillText(i, pos, rulerSize / 2);
+                ctxLeft.fillText(i, rulerSize / 2, pos);
+            }
+        }
+        ctx.stroke();
     }
 
-    /**
-     * イベント座標下のセルを描画/消去します。
-     * @param {MouseEvent} event - マウスイベント。
-     */
+    /** マス目を塗る処理 */
     function paintCell(event) {
-        const rect = canvas.getBoundingClientRect();
+        const rect = gridCanvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-
-        const cellSize = canvas.width / n;
+        const cellSize = gridCanvas.width / n;
         const col = Math.floor(x / cellSize);
         const row = Math.floor(y / cellSize);
 
         if (row < 0 || row >= n || col < 0 || col >= n) return;
         
-        // 既に同じ色なら再描画しない（パフォーマンス向上）
         if (gridState[row][col] !== paintMode) {
             gridState[row][col] = paintMode;
             drawGrid();
-        }
-    }
-
-    /**
-     * サイズ変更のリクエストを処理します。グリッドが空でなければ確認モーダルを表示します。
-     * @param {number} newSize - 希望する新しいサイズ。
-     */
-    function handleSizeChangeRequest(newSize) {
-        if (newSize === n) return; // サイズが変わらない場合は何もしない
-
-        if (isGridEmpty()) {
-            updateGridSize(newSize);
-        } else {
-            pendingNewSize = newSize;
-            confirmResizeModal.style.display = 'flex';
         }
     }
     
     // --- イベントリスナー ---
 
     // 描画関連
-    canvas.addEventListener('mousedown', (event) => {
+    gridCanvas.addEventListener('mousedown', (event) => {
         isDrawing = true;
-        const rect = canvas.getBoundingClientRect();
+        const rect = gridCanvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-        const cellSize = canvas.width / n;
+        const cellSize = gridCanvas.width / n;
         const col = Math.floor(x / cellSize);
         const row = Math.floor(y / cellSize);
-
-        // 押したマスの色が白なら描画モード、黒なら消去モードに設定
         paintMode = 1 - gridState[row][col];
-        
-        paintCell(event); // クリックしただけでも描画
+        paintCell(event);
     });
+    gridCanvas.addEventListener('mousemove', (event) => { if (isDrawing) paintCell(event); });
+    document.addEventListener('mouseup', () => { isDrawing = false; });
+    gridCanvas.addEventListener('mouseleave', () => { isDrawing = false; });
 
-    canvas.addEventListener('mousemove', (event) => {
-        if (isDrawing) {
-            paintCell(event);
+    // グリッドサイズ変更
+    sizeSlider.addEventListener('input', () => updateGridSize(parseInt(sizeSlider.value, 10)));
+    incrementBtn.addEventListener('click', () => updateGridSize(n + 1));
+    decrementBtn.addEventListener('click', () => updateGridSize(n - 1));
+
+    // 補助目盛サイズ変更
+    subGridSizeSlider.addEventListener('input', () => {
+        m = parseInt(subGridSizeSlider.value, 10);
+        subGridSizeLabel.textContent = m;
+        drawGrid();
+    });
+    subIncrementBtn.addEventListener('click', () => {
+        if (m < 32) {
+            m++;
+            subGridSizeSlider.value = m;
+            subGridSizeLabel.textContent = m;
+            drawGrid();
         }
     });
-    canvas.addEventListener('mouseup', () => { isDrawing = false; });
-    canvas.addEventListener('mouseleave', () => { isDrawing = false; });
-
-    // サイズ変更関連
-    sizeSlider.addEventListener('input', () => {
-        handleSizeChangeRequest(parseInt(sizeSlider.value, 10));
-    });
-    // スライダーからマウスを離した時に、キャンセルされていたらスライダー表示を元に戻す
-    sizeSlider.addEventListener('change', () => {
-        if (sizeSlider.value != n) {
-            sizeSlider.value = n;
+    subDecrementBtn.addEventListener('click', () => {
+        if (m > 2) {
+            m--;
+            subGridSizeSlider.value = m;
+            subGridSizeLabel.textContent = m;
+            drawGrid();
         }
     });
-    incrementBtn.addEventListener('click', () => { handleSizeChangeRequest(n + 1); });
-    decrementBtn.addEventListener('click', () => { handleSizeChangeRequest(n - 1); });
 
-    // サイズ変更確認モーダル
-    confirmResizeBtn.addEventListener('click', () => {
-        updateGridSize(pendingNewSize);
-        confirmResizeModal.style.display = 'none';
-    });
-    cancelResizeBtn.addEventListener('click', () => {
-        sizeSlider.value = n; // スライダーの表示を元に戻す
-        confirmResizeModal.style.display = 'none';
-    });
-
-    // クリアボタンとクリア確認モーダル
-    clearButton.addEventListener('click', () => {
-        confirmClearModal.style.display = 'flex';
-    });
+    // クリア確認モーダル
+    clearButton.addEventListener('click', () => confirmClearModal.style.display = 'flex');
     confirmClearBtn.addEventListener('click', () => {
         initializeGrid();
-        confirmClearModal.style.display = 'none';
+        confirmClearModal.style.display = 'none'; // 修正：正しいモーダルを閉じる
     });
-    cancelClearBtn.addEventListener('click', () => {
-        confirmClearModal.style.display = 'none';
-    });
-    confirmClearModal.addEventListener('click', (event) => {
-        if (event.target === confirmClearModal) {
-            confirmClearModal.style.display = 'none';
-        }
-    });
-
-    // 保存ボタン
+    cancelClearBtn.addEventListener('click', () => confirmClearModal.style.display = 'none');
+    
+    // PNG保存
     saveButton.addEventListener('click', () => {
         const outputSize = 1080;
         const offscreenCanvas = document.createElement('canvas');
@@ -206,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const offscreenCtx = offscreenCanvas.getContext('2d');
         const cellSize = outputSize / n;
 
-        // グリッドの黒いセルを描画
         offscreenCtx.fillStyle = 'black';
         for (let row = 0; row < n; row++) {
             for (let col = 0; col < n; col++) {
@@ -216,48 +233,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // UPNG.jsを使用してPNGをエンコード（圧縮）
         try {
-            // キャンバスからピクセルデータを取得
             const imageData = offscreenCtx.getImageData(0, 0, outputSize, outputSize);
-            // imageData.dataはUint8ClampedArray。そのバッファを取得
             const buffer = imageData.data.buffer;
-            
-            // UPNG.encode([バッファ], 幅, 高さ, 色数)
-            // 色数(cnum)を0に設定すると、最適なパレットが選択される
             const pngBuffer = UPNG.encode([buffer], outputSize, outputSize, 0);
-
-            // エンコードされたバッファからBlobオブジェクトを作成
             const blob = new Blob([pngBuffer], { type: 'image/png' });
-            
-            // Blobからダウンロード用のURLを生成
             const url = URL.createObjectURL(blob);
-
-            // ダウンロードリンクを作成してクリック
             const link = document.createElement('a');
-            link.download = `grid_${n}x${n}.png`;
+            link.download = `pixel_grid_${n}x${n}.png`;
             link.href = url;
             link.click();
-            
-            // 生成したURLを解放
             URL.revokeObjectURL(url);
-
         } catch (error) {
             console.error("PNGの圧縮に失敗しました:", error);
-            // alertの代わりにモーダルを表示するよう変更
             saveErrorModal.style.display = 'flex';
         }
     });
     
-    // 保存失敗モーダルのイベントリスナーを追加
-    closeErrorBtn.addEventListener('click', () => {
-        saveErrorModal.style.display = 'none';
-    });
-    saveErrorModal.addEventListener('click', (event) => {
-        if (event.target === saveErrorModal) {
-            saveErrorModal.style.display = 'none';
-        }
-    });
+    // エラーモーダル閉じる
+    closeErrorBtn.addEventListener('click', () => saveErrorModal.style.display = 'none');
 
     // --- 初期化 ---
     initializeGrid();

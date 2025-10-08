@@ -5,69 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pixel Grid</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
+    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/upng-js@2.1.0/UPNG.min.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>Pixel Grid</h1>
         <div class="controls">
-            <label for="gridSize">グリッドサイズ: <span id="gridSizeLabel">8</span>x<span id="gridSizeLabel2">8</span></label>
-            <div class="slider-container">
-                <button id="decrementBtn" class="stepper-btn">-</button>
-                <input type="range" id="gridSize" min="1" max="64" value="8">
-                <button id="incrementBtn" class="stepper-btn">+</button>
+            <div class="control-group">
+                <label for="gridSize">Grid Size: <span id="gridSizeLabel">16</span>x<span id="gridSizeLabel2">16</span></label>
+                <div class="slider-container">
+                    <button id="decrementBtn" class="stepper-btn">-</button>
+                    <input type="range" id="gridSize" min="1" max="64" value="16">
+                    <button id="incrementBtn" class="stepper-btn">+</button>
+                </div>
+                <button id="saveButton">Save as PNG</button>
             </div>
-            <div class="action-buttons">
-                <button id="saveButton">PNGとして保存</button>
-                <button id="clearButton">クリア</button>
+            <div class="control-group">
+                <label for="subGridSize">Subgrid Size: <span id="subGridSizeLabel">4</span></label>
+                <div class="slider-container">
+                    <button id="subDecrementBtn" class="stepper-btn">-</button>
+                    <input type="range" id="subGridSize" min="2" max="32" value="4">
+                    <button id="subIncrementBtn" class="stepper-btn">+</button>
+                </div>
+                <button id="clearButton">Clear</button>
             </div>
         </div>
-        <canvas id="gridCanvas" width="640" height="640"></canvas>
+
+        <div class="grid-container">
+            <div class="corner"></div>
+            <canvas id="topRuler"></canvas>
+            <canvas id="leftRuler"></canvas>
+            <canvas id="gridCanvas"></canvas>
+        </div>
     </div>
 
+    <!-- Modals -->
     <div id="confirmClearModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
-            <p>本当にキャンバスをクリアしますか？</p>
+            <p>Are you sure you want to clear the canvas?</p>
             <div class="modal-actions">
-                <button id="confirmClearBtn">はい、クリアします</button>
-                <button id="cancelClearBtn">キャンセル</button>
+                <button id="confirmClearBtn">Yes, Clear</button>
+                <button id="cancelClearBtn">Cancel</button>
             </div>
         </div>
     </div>
-
-    <div id="confirmResizeModal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <p>サイズを変更すると描画内容はクリアされます。<br>よろしいですか？</p>
-            <div class="modal-actions">
-                <button id="confirmResizeBtn">はい、変更します</button>
-                <button id="cancelResizeBtn">キャンセル</button>
-            </div>
-        </div>
-    </div>
-
     <div id="saveErrorModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
-            <p>PNGの保存に失敗しました。</p>
+            <p>Failed to save PNG image.</p>
             <div class="modal-actions">
-                <button id="closeErrorBtn">閉じる</button>
+                <button id="closeErrorBtn">Close</button>
             </div>
         </div>
     </div>
 
-    <a 
-            id="github-link"
-            href="https://github.com/black-sesame-ice-cream/Pixel-Grid" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            title="View on GitHub">
-        
-            <i class="fa-brands fa-github"></i>
-    
-        </a>
-
-    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/upng-js@2.1.0/UPNG.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

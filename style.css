@@ -219,3 +219,14 @@ button:hover {
     background-color: #0069d9;
 }
 
+#github-link {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9999;
+}
+
+#github-link .fa-github {
+    font-size: 32px;
+    color: #000000;
+}

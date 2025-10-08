@@ -191,8 +191,32 @@ canvas {
 }
 
 #confirmResizeBtn {
-    background-color: #c82333; /* 目立つように赤色に */
+    background-color: #c82333;
 }
 #confirmResizeBtn:hover {
     background-color: #a81d2a;
+}
+
+#closeErrorBtn {
+    background-color: #a3958c;
+    padding: 0.6rem 1.8rem;
+}
+#closeErrorBtn:hover {
+    background-color: #8b796d;
+}
+
+#github-link {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9999;
+}
+
+#github-link .fa-github {
+    font-size: 32px;
+    color: #000000;
+}
+
+#github-link:hover .fa-github {
+    opacity: 0.7;
 }

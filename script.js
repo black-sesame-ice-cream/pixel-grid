@@ -20,6 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmResizeBtn = document.getElementById('confirmResizeBtn');
     const cancelResizeBtn = document.getElementById('cancelResizeBtn');
 
+    // 保存失敗モーダルを取得
+    const saveErrorModal = document.getElementById('saveErrorModal');
+    const closeErrorBtn = document.getElementById('closeErrorBtn');
+
     // --- グローバル変数 ---
     let n = parseInt(sizeSlider.value, 10);
     let gridState;
@@ -202,23 +206,60 @@ document.addEventListener('DOMContentLoaded', () => {
         const offscreenCtx = offscreenCanvas.getContext('2d');
         const cellSize = outputSize / n;
 
-        offscreenCtx.clearRect(0, 0, outputSize, outputSize);
-
+        // グリッドの黒いセルを描画
+        offscreenCtx.fillStyle = 'black';
         for (let row = 0; row < n; row++) {
             for (let col = 0; col < n; col++) {
                 if (gridState[row][col] === 1) {
-                    offscreenCtx.fillStyle = 'black';
                     offscreenCtx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
                 }
             }
         }
+        
+        // UPNG.jsを使用してPNGをエンコード（圧縮）
+        try {
+            // キャンバスからピクセルデータを取得
+            const imageData = offscreenCtx.getImageData(0, 0, outputSize, outputSize);
+            // imageData.dataはUint8ClampedArray。そのバッファを取得
+            const buffer = imageData.data.buffer;
+            
+            // UPNG.encode([バッファ], 幅, 高さ, 色数)
+            // 色数(cnum)を0に設定すると、最適なパレットが選択される
+            const pngBuffer = UPNG.encode([buffer], outputSize, outputSize, 0);
 
-        const link = document.createElement('a');
-        link.download = `grid_${n}x${n}.png`;
-        link.href = offscreenCanvas.toDataURL('image/png');
-        link.click();
+            // エンコードされたバッファからBlobオブジェクトを作成
+            const blob = new Blob([pngBuffer], { type: 'image/png' });
+            
+            // Blobからダウンロード用のURLを生成
+            const url = URL.createObjectURL(blob);
+
+            // ダウンロードリンクを作成してクリック
+            const link = document.createElement('a');
+            link.download = `grid_${n}x${n}.png`;
+            link.href = url;
+            link.click();
+            
+            // 生成したURLを解放
+            URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error("PNGの圧縮に失敗しました:", error);
+            // alertの代わりにモーダルを表示するよう変更
+            saveErrorModal.style.display = 'flex';
+        }
     });
     
+    // 保存失敗モーダルのイベントリスナーを追加
+    closeErrorBtn.addEventListener('click', () => {
+        saveErrorModal.style.display = 'none';
+    });
+    saveErrorModal.addEventListener('click', (event) => {
+        if (event.target === saveErrorModal) {
+            saveErrorModal.style.display = 'none';
+        }
+    });
+
     // --- 初期化 ---
     initializeGrid();
 });
+

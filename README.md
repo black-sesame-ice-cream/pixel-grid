@@ -1,4 +1,6 @@
 # Pixel Grid
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fblack-sesame-ice-cream%2FPixel-Grid.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fblack-sesame-ice-cream%2FPixel-Grid?ref=badge_shield)
+
 
 ## Recommended Environment
 This tool is designed for use on a PC with the Google Chrome browser. Operation on other devices or browsers is not guaranteed.
@@ -46,3 +48,6 @@ This project is built with standard web technologies and a couple of libraries f
 - **Libraries**
   - [UPNG.js](https://github.com/photopea/UPNG.js) - For encoding PNG files.
   - [pako](https://github.com/nodeca/pako) - A zlib port for fast DEFLATE compression, used by UPNG.js.
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fblack-sesame-ice-cream%2FPixel-Grid.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fblack-sesame-ice-cream%2FPixel-Grid?ref=badge_large)

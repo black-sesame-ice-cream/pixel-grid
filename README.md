@@ -1,4 +1,4 @@
-# pixel-grid
+# Pixel Grid
 
 ## Recommended Environment
 This tool is designed for use on a PC with the Google Chrome browser. Operation on other devices or browsers is not guaranteed.

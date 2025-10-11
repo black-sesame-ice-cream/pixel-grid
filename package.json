@@ -1,0 +1,27 @@
+{
+  "name": "pixel-grid",
+  "version": "1.0.0",
+  "description": "This tool is designed for use on a PC with the Google Chrome browser. Operation on other devices or browsers is not guaranteed.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/black-sesame-ice-cream/pixel_image.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/black-sesame-ice-cream/pixel_image/issues"
+  },
+  "homepage": "https://github.com/black-sesame-ice-cream/pixel_image#readme",
+  "dependencies": {
+    "pako": "^2.1.0",
+    "upng-js": "^2.1.0"
+  },
+  "devDependencies": {
+    "license-checker": "^25.0.1"
+  }
+}

@@ -1,4 +1,4 @@
-# Pixel Grid
+# pixel-grid
 
 ## Recommended Environment
 This tool is designed for use on a PC with the Google Chrome browser. Operation on other devices or browsers is not guaranteed.
@@ -9,12 +9,12 @@ This tool is designed for use on a PC with the Google Chrome browser. Operation 
 ## Demo
 You can try this tool on the page below.
 
-https://black-sesame-ice-cream.github.io/Pixel-Grid/
+https://black-sesame-ice-cream.github.io/pixel-grid/
 
 ## デモ
 以下のページでこのツールを試すことができます。
 
-https://black-sesame-ice-cream.github.io/Pixel-Grid/
+https://black-sesame-ice-cream.github.io/pixel-grid/
 
 ## Overview
 Pixel Grid is a simple web-based tool for creating pixel art. You can draw on a resizable grid and save your creation as a PNG image with a transparent background. It features rulers and adjustable subgrid lines to make drawing large-scale art easier.
